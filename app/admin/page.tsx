@@ -578,7 +578,7 @@ export default async function AdminPage({
                   <Input
                     id="category-imageUrl"
                     name="imageUrl"
-                    placeholder="/api/assets/categories/mon-image.png"
+                    placeholder="/static-assets/categories/mon-image.png"
                   />
                 </Field>
               </div>
@@ -714,7 +714,7 @@ export default async function AdminPage({
                 <Input
                   id="brand-imageUrl"
                   name="imageUrl"
-                  placeholder="/api/assets/brands/brand_1.png"
+                  placeholder="/static-assets/brands/brand_1.png"
                 />
               </Field>
               <Field
@@ -887,7 +887,7 @@ export default async function AdminPage({
                 <Textarea
                   id="product-images"
                   name="imageUrls"
-                  placeholder={"/api/assets/products/product_1.png\nhttps://example.com/image-2.jpg"}
+                  placeholder={"/static-assets/products/product_1.png\nhttps://example.com/image-2.jpg"}
                   className="min-h-28"
                 />
               </Field>

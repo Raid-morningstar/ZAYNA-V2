@@ -12,16 +12,24 @@ type ImageSource =
   | null
   | undefined;
 
+const LEGACY_ASSET_PREFIX = "/api/assets/";
+const STATIC_ASSET_PREFIX = "/static-assets/";
+
+const normalizeImageUrl = (url: string) =>
+  url.startsWith(LEGACY_ASSET_PREFIX)
+    ? `${STATIC_ASSET_PREFIX}${url.slice(LEGACY_ASSET_PREFIX.length)}`
+    : url;
+
 export const resolveImageUrl = (source: ImageSource) => {
   if (!source) {
     return "";
   }
 
   if (typeof source === "string") {
-    return source;
+    return normalizeImageUrl(source);
   }
 
-  return source.asset?.url || source.url || "";
+  return normalizeImageUrl(source.asset?.url || source.url || "");
 };
 
 export const urlFor = (source: ImageSource) => ({

@@ -78,6 +78,11 @@ export type AdminIdentity = {
 };
 
 export const getAdminIdentity = async (): Promise<AdminIdentity> => {
+  const emails = adminEmailSet();
+  const userIds = adminUserIdSet();
+  const accessConfigured = emails.size > 0 || userIds.size > 0;
+  const usesDevelopmentFallback =
+    !accessConfigured && process.env.NODE_ENV !== "production";
   const { userId } = await auth();
 
   if (!userId) {
@@ -86,26 +91,49 @@ export const getAdminIdentity = async (): Promise<AdminIdentity> => {
       email: null,
       displayName: null,
       isAdmin: false,
-      accessConfigured: adminEmailSet().size > 0 || adminUserIdSet().size > 0,
+      accessConfigured,
       usesDevelopmentFallback: false,
     };
   }
 
-  const user = await currentUser();
+  const normalizedUserId = userId.toLowerCase();
+  if (userIds.has(normalizedUserId)) {
+    return {
+      userId,
+      email: null,
+      displayName: userId,
+      isAdmin: true,
+      accessConfigured,
+      usesDevelopmentFallback: false,
+    };
+  }
+
+  if (usesDevelopmentFallback) {
+    return {
+      userId,
+      email: null,
+      displayName: userId,
+      isAdmin: true,
+      accessConfigured,
+      usesDevelopmentFallback: true,
+    };
+  }
+
+  let user: Awaited<ReturnType<typeof currentUser>> | null = null;
+
+  try {
+    user = await currentUser();
+  } catch (error) {
+    console.error("Failed to load Clerk currentUser for admin identity:", error);
+  }
+
   const email = primaryEmailFromUser(user);
   const displayName =
     user?.fullName ||
     [user?.firstName, user?.lastName].filter(Boolean).join(" ") ||
     email ||
     userId;
-
-  const emails = adminEmailSet();
-  const userIds = adminUserIdSet();
-  const accessConfigured = emails.size > 0 || userIds.size > 0;
-  const isConfiguredAdmin =
-    userIds.has(userId.toLowerCase()) || (email ? emails.has(email.toLowerCase()) : false);
-  const usesDevelopmentFallback =
-    !accessConfigured && process.env.NODE_ENV !== "production";
+  const isConfiguredAdmin = email ? emails.has(email.toLowerCase()) : false;
 
   return {
     userId,

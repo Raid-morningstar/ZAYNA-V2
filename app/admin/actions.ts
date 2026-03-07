@@ -11,7 +11,7 @@ import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/admin";
 import { prisma } from "@/lib/prisma";
 
-const IMAGE_ROOT = path.join(process.cwd(), "images");
+const IMAGE_ROOT = path.join(process.cwd(), "public", "static-assets");
 const MAX_IMAGE_UPLOAD_BYTES = 5 * 1024 * 1024;
 const ALLOWED_IMAGE_EXTENSIONS = new Set([".png", ".jpg", ".jpeg", ".webp"]);
 const MIME_TO_EXTENSION = new Map([
@@ -88,7 +88,7 @@ const saveImageFile = async (
   await mkdir(targetDirectory, { recursive: true });
   await writeFile(targetPath, fileBuffer);
 
-  return `/api/assets/${directory}/${fileName}`;
+  return `/static-assets/${directory}/${fileName}`;
 };
 
 const getErrorMessage = (error: unknown) => {
