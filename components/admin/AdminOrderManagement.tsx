@@ -109,6 +109,30 @@ const StatusPill = ({ value, label }: { value: string; label?: string }) => (
   </span>
 );
 
+const DetailMetricCard = ({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: typeof CalendarDays;
+  label: string;
+  value: string;
+}) => (
+  <div className="rounded-[24px] border border-slate-200 bg-slate-50/85 p-5 shadow-[0_18px_40px_-36px_rgba(15,23,42,0.16)]">
+    <div className="flex items-start gap-4">
+      <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white text-shop_btn_dark_green ring-1 ring-inset ring-slate-200">
+        <Icon className="h-5 w-5" />
+      </span>
+      <div className="min-w-0">
+        <p className="text-xs font-medium tracking-[0.04em] text-slate-500">
+          {label}
+        </p>
+        <p className="mt-2 text-base font-semibold leading-6 text-slate-950">{value}</p>
+      </div>
+    </div>
+  </div>
+);
+
 const AdminOrderManagement = ({
   orders,
   stageOptions,
@@ -321,58 +345,75 @@ const AdminOrderManagement = ({
                 </div>
               </div>
 
-              <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_280px]">
-                <div className="rounded-[28px] border border-slate-200 bg-slate-50/70 p-5">
-                  <div className="grid gap-3 sm:grid-cols-3">
-                    <div className="rounded-2xl bg-white p-4 shadow-sm">
-                      <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
-                        <CalendarDays className="h-4 w-4 text-shop_btn_dark_green" />
-                        Date
-                      </div>
-                      <p className="mt-2 text-sm font-semibold text-slate-900">
-                        {dateFormatter.format(new Date(selectedOrder.orderDate))}
+              <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
+                <div className="rounded-[30px] border border-slate-200 bg-white p-6 shadow-[0_22px_48px_-40px_rgba(15,23,42,0.2)]">
+                  <div className="flex flex-col gap-3 border-b border-slate-200 pb-4 sm:flex-row sm:items-end sm:justify-between">
+                    <div>
+                      <p className="text-lg font-semibold tracking-tight text-slate-950">
+                        Synthese de la commande
+                      </p>
+                      <p className="mt-1 text-sm leading-6 text-slate-600">
+                        Les informations essentielles pour traiter cette commande rapidement.
                       </p>
                     </div>
-                    <div className="rounded-2xl bg-white p-4 shadow-sm">
-                      <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
-                        <Phone className="h-4 w-4 text-shop_btn_dark_green" />
-                        Contact
-                      </div>
-                      <p className="mt-2 text-sm font-semibold text-slate-900">
-                        {selectedOrder.phone || "Non renseigne"}
-                      </p>
+                    <div className="flex flex-wrap gap-2">
+                      <StatusPill value={selectedOrder.adminStage} label={formatLabel(selectedOrder.adminStage)} />
+                      <StatusPill value={selectedOrder.paymentStatus} label={formatLabel(selectedOrder.paymentStatus)} />
                     </div>
-                    <div className="rounded-2xl bg-white p-4 shadow-sm">
-                      <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
-                        <ShoppingBag className="h-4 w-4 text-shop_btn_dark_green" />
-                        Articles
-                      </div>
-                      <p className="mt-2 text-sm font-semibold text-slate-900">
-                        {selectedOrder.itemsCount} article(s)
-                      </p>
-                    </div>
+                  </div>
+
+                  <div className="mt-5 grid gap-4 sm:grid-cols-3">
+                    <DetailMetricCard
+                      icon={CalendarDays}
+                      label="Date"
+                      value={dateFormatter.format(new Date(selectedOrder.orderDate))}
+                    />
+                    <DetailMetricCard
+                      icon={Phone}
+                      label="Contact"
+                      value={selectedOrder.phone || "Non renseigne"}
+                    />
+                    <DetailMetricCard
+                      icon={ShoppingBag}
+                      label="Articles"
+                      value={`${selectedOrder.itemsCount} article(s)`}
+                    />
                   </div>
                 </div>
 
                 <form
                   action={updateOrderStatusAction}
-                  className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-[0_18px_40px_-34px_rgba(15,23,42,0.24)]"
+                  className="rounded-[30px] border border-slate-200 bg-white p-6 shadow-[0_22px_48px_-38px_rgba(15,23,42,0.26)]"
                 >
                   <input type="hidden" name="id" value={selectedOrder.id} />
-                  <p className="text-sm font-semibold text-slate-900">Mettre a jour la commande</p>
-                  <p className="mt-1 text-xs leading-5 text-slate-500">
-                    Choisissez simplement l&apos;etape actuelle de la commande.
-                  </p>
 
-                  <div className="mt-4 space-y-3">
-                    <label htmlFor={`order-status-${selectedOrder.id}`} className="text-sm font-medium text-slate-700">
+                  <div className="rounded-[22px] border border-shop_light_green/20 bg-shop_light_green/8 p-4">
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-shop_btn_dark_green/70">
+                      Action rapide
+                    </p>
+                    <h3 className="mt-2 text-lg font-semibold tracking-tight text-slate-950">
+                      Mettre a jour la commande
+                    </h3>
+                    <p className="mt-2 text-sm leading-6 text-slate-600">
+                      Choisissez simplement l&apos;etape actuelle de la commande.
+                    </p>
+                  </div>
+
+                  <div className="mt-5 space-y-3.5">
+                    <label
+                      htmlFor={`order-status-${selectedOrder.id}`}
+                      className="text-sm font-semibold text-slate-800"
+                    >
                       Statut
                     </label>
+                    <p className="text-xs leading-5 text-slate-500">
+                      Utilisez un statut clair pour garder le suivi client et interne coherent.
+                    </p>
                     <select
                       id={`order-status-${selectedOrder.id}`}
                       name="status"
                       defaultValue={selectedOrder.adminStage}
-                      className="flex h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none transition focus:border-shop_btn_dark_green focus:ring-4 focus:ring-shop_light_green/15"
+                      className="flex h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none transition focus:border-shop_btn_dark_green focus:ring-4 focus:ring-shop_light_green/15"
                     >
                       {stageOptions.map((option) => (
                         <option key={option.value} value={option.value}>
@@ -382,12 +423,17 @@ const AdminOrderManagement = ({
                     </select>
                   </div>
 
-                  <AdminSubmitButton
-                    pendingLabel="Mise a jour..."
-                    className="mt-5 h-11 w-full rounded-2xl bg-shop_btn_dark_green text-white hover:bg-shop_dark_green"
-                  >
-                    Enregistrer
-                  </AdminSubmitButton>
+                  <div className="mt-6 space-y-3">
+                    <AdminSubmitButton
+                      pendingLabel="Mise a jour..."
+                      className="h-12 w-full rounded-2xl bg-shop_btn_dark_green text-white hover:bg-shop_dark_green"
+                    >
+                      Enregistrer la mise a jour
+                    </AdminSubmitButton>
+                    <p className="text-xs leading-5 text-slate-500">
+                      Le changement sera applique immediatement dans le tableau de bord.
+                    </p>
+                  </div>
                 </form>
               </div>
 

@@ -1,8 +1,8 @@
 "use client";
 
-import dynamic from "next/dynamic";
-
+import { useHydrated } from "@/hooks";
 import { cn } from "@/lib/utils";
+import AdminUserButtonClient from "./AdminUserButtonClient";
 
 type AdminUserButtonProps = {
   size?: "sm" | "md";
@@ -14,17 +14,12 @@ const sizeClassNames = {
   md: "h-9 w-9",
 } as const;
 
-const ClientUserButton = dynamic(
-  () => import("./AdminUserButtonClient"),
-  {
-    ssr: false,
-  }
-);
-
 export default function AdminUserButton({
   size = "md",
   className,
 }: AdminUserButtonProps) {
+  const mounted = useHydrated();
+
   return (
     <div
       className={cn(
@@ -33,7 +28,11 @@ export default function AdminUserButton({
         className
       )}
     >
-      <ClientUserButton size={size} className={className} />
+      {mounted ? (
+        <AdminUserButtonClient />
+      ) : (
+        <div className="h-full w-full rounded-full border border-white/12 bg-white/10" />
+      )}
     </div>
   );
 }

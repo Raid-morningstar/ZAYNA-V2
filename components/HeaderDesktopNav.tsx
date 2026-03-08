@@ -1,7 +1,8 @@
 "use client";
 
+import { useHydrated } from "@/hooks";
 import { cn } from "@/lib/utils";
-import { ClerkLoaded, SignedIn, UserButton, useAuth } from "@clerk/nextjs";
+import { UserButton, useAuth } from "@clerk/nextjs";
 import { LayoutDashboard, Logs } from "lucide-react";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
@@ -21,6 +22,7 @@ type NavigationContext = {
 
 const HeaderDesktopNav = () => {
   const { isLoaded, userId } = useAuth();
+  const mounted = useHydrated();
   const [isSearchActive, setIsSearchActive] = useState(false);
   const [navigationContext, setNavigationContext] = useState<NavigationContext>({
     ordersCount: 0,
@@ -78,7 +80,8 @@ const HeaderDesktopNav = () => {
     };
   }, [isLoaded, userId]);
 
-  const isSignedIn = Boolean(userId);
+  const isAuthReady = mounted && isLoaded;
+  const isSignedIn = isAuthReady && Boolean(userId);
   const { ordersCount, isAdmin } = navigationContext;
 
   return (
@@ -149,14 +152,17 @@ const HeaderDesktopNav = () => {
               </Link>
             )}
 
-            <ClerkLoaded>
-              <SignedIn>
+            {isAuthReady ? (
+              isSignedIn ? (
                 <div className="pl-0.5">
                   <UserButton />
                 </div>
-              </SignedIn>
-              {!isSignedIn && <SignIn className="px-3.5" />}
-            </ClerkLoaded>
+              ) : (
+                <SignIn className="px-3.5" />
+              )
+            ) : (
+              <div className="h-9 w-28 rounded-full border border-shop_light_green/20 bg-white/70" />
+            )}
           </div>
         </div>
       </div>
@@ -187,12 +193,15 @@ const HeaderDesktopNav = () => {
           </Link>
         )}
 
-        <ClerkLoaded>
-          <SignedIn>
+        {isAuthReady ? (
+          isSignedIn ? (
             <UserButton />
-          </SignedIn>
-          {!isSignedIn && <SignIn className="h-8 px-3 py-1 text-xs" />}
-        </ClerkLoaded>
+          ) : (
+            <SignIn className="h-8 px-3 py-1 text-xs" />
+          )
+        ) : (
+          <div className="h-8 w-8 rounded-full border border-shop_light_green/20 bg-white/70" />
+        )}
       </div>
     </>
   );
