@@ -8,7 +8,9 @@ import {
   PromoDiscountType,
 } from "@prisma/client";
 import { auth, currentUser } from "@clerk/nextjs/server";
+import { unstable_cache } from "next/cache";
 import { redirect } from "next/navigation";
+import { cache } from "react";
 
 import { prisma } from "@/lib/prisma";
 
@@ -153,7 +155,7 @@ export type AdminIdentity = {
   usesDevelopmentFallback: boolean;
 };
 
-export const getAdminIdentity = async (): Promise<AdminIdentity> => {
+export const getAdminIdentity = cache(async (): Promise<AdminIdentity> => {
   const emails = adminEmailSet();
   const userIds = adminUserIdSet();
   const accessConfigured = emails.size > 0 || userIds.size > 0;
@@ -219,7 +221,7 @@ export const getAdminIdentity = async (): Promise<AdminIdentity> => {
     accessConfigured,
     usesDevelopmentFallback,
   };
-};
+});
 
 export const requireAdmin = async () => {
   const identity = await getAdminIdentity();
@@ -353,7 +355,11 @@ export type AdminShellMetrics = {
   expiringPromoCodes: number;
 };
 
-export const getAdminShellMetrics = async (): Promise<AdminShellMetrics> => {
+const ADMIN_DATA_TAG = "admin-data";
+
+const toDate = (value: Date | string | null) => (value ? new Date(value) : null);
+
+const fetchAdminShellMetrics = async (): Promise<AdminShellMetrics> => {
   const [pendingOrders, lowStockProducts, expiringPromoCodes] = await Promise.all([
     prisma.order.count({
       where: {
@@ -387,9 +393,14 @@ export const getAdminShellMetrics = async (): Promise<AdminShellMetrics> => {
   };
 };
 
-export const getAdminDashboardData = async (): Promise<AdminDashboardData> => {
-  await requireAdmin();
+const getCachedAdminShellMetrics = unstable_cache(fetchAdminShellMetrics, ["admin-shell-metrics"], {
+  tags: [ADMIN_DATA_TAG],
+  revalidate: 120,
+});
 
+export const getAdminShellMetrics = async (): Promise<AdminShellMetrics> => getCachedAdminShellMetrics();
+
+const fetchAdminDashboardData = async (): Promise<AdminDashboardData> => {
   const [
     totalOrders,
     totalProducts,
@@ -695,3 +706,45 @@ export const getAdminDashboardData = async (): Promise<AdminDashboardData> => {
     })),
   };
 };
+
+const getCachedAdminDashboardData = unstable_cache(fetchAdminDashboardData, ["admin-dashboard"], {
+  tags: [ADMIN_DATA_TAG],
+  revalidate: 120,
+});
+
+export const getAdminDashboardData = async (): Promise<AdminDashboardData> => {
+  await requireAdmin();
+  const data = await getCachedAdminDashboardData();
+
+  return {
+    ...data,
+    categories: data.categories.map((category) => ({
+      ...category,
+      updatedAt: new Date(category.updatedAt),
+    })),
+    brands: data.brands.map((brand) => ({
+      ...brand,
+      updatedAt: new Date(brand.updatedAt),
+    })),
+    products: data.products.map((product) => ({
+      ...product,
+      updatedAt: new Date(product.updatedAt),
+    })),
+    promoCodes: data.promoCodes.map((promo) => ({
+      ...promo,
+      endsAt: toDate(promo.endsAt),
+      updatedAt: new Date(promo.updatedAt),
+    })),
+    orders: data.orders.map((order) => ({
+      ...order,
+      orderDate: new Date(order.orderDate),
+    })),
+    customers: data.customers.map((customer) => ({
+      ...customer,
+      lastOrderDate: toDate(customer.lastOrderDate),
+      createdAt: new Date(customer.createdAt),
+    })),
+  };
+};
+
+export const getAdminDataTag = () => ADMIN_DATA_TAG;

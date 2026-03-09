@@ -1,10 +1,15 @@
 "use server";
 
 import { PaymentMethod, type ProductStatus } from "@prisma/client";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
 
-import { adminOrderStageOptions, adminStageToOrderStatus, requireAdmin } from "@/lib/admin";
+import {
+  adminOrderStageOptions,
+  adminStageToOrderStatus,
+  getAdminDataTag,
+  requireAdmin,
+} from "@/lib/admin";
 import { deleteStoredAsset, deleteStoredAssets, isUploadedFile, saveOptimizedImage } from "@/lib/admin-media";
 import { prisma } from "@/lib/prisma";
 
@@ -159,7 +164,20 @@ const adminRedirect = (
   }
 
   const query = searchParams.toString();
-  redirect(`/admin${query ? `?${query}` : ""}#${section}`);
+  const targetPath =
+    section === "dashboard"
+      ? "/admin"
+      : section === "orders"
+        ? "/admin/orders"
+        : section === "products"
+          ? "/admin/products"
+          : section === "categories"
+            ? "/admin/categories"
+            : section === "brands"
+              ? "/admin/brands"
+              : "/admin/promos";
+
+  redirect(`${targetPath}${query ? `?${query}` : ""}`);
 };
 
 const isRedirectSignal = (error: unknown): error is { digest: string } =>
@@ -196,6 +214,8 @@ const withAction = async (
 const refreshStorefront = (paths: Array<string | null | undefined> = []) => {
   const basePaths = ["/admin", "/", "/shop", "/deal", "/orders"];
   const revalidationTargets = [...basePaths, ...paths.filter(Boolean)];
+
+  revalidateTag(getAdminDataTag(), "max");
 
   for (const path of new Set(revalidationTargets)) {
     revalidatePath(path as string);

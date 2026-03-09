@@ -67,13 +67,15 @@ export default function AdminHeader({
             </div>
 
             <div className="mt-2 flex flex-wrap items-center gap-2 md:mt-0">
-              <Link
-                href={activeItem.href}
-                className="inline-flex items-center gap-2 rounded-2xl border border-shop_light_green/30 bg-white/90 px-3 py-2 text-sm font-semibold text-shop_btn_dark_green transition-colors hover:bg-shop_light_green/10"
-              >
-                Aller a la section
-                <ArrowUpRight className="h-4 w-4" />
-              </Link>
+              {activeItem.actionHref && activeItem.actionLabel ? (
+                <Link
+                  href={activeItem.actionHref}
+                  className="inline-flex items-center gap-2 rounded-2xl border border-shop_light_green/30 bg-white/90 px-3 py-2 text-sm font-semibold text-shop_btn_dark_green transition-colors hover:bg-shop_light_green/10"
+                >
+                  {activeItem.actionLabel}
+                  <ArrowUpRight className="h-4 w-4" />
+                </Link>
+              ) : null}
               <Link
                 href="/"
                 className="inline-flex items-center gap-2 rounded-2xl bg-shop_btn_dark_green px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-shop_dark_green"

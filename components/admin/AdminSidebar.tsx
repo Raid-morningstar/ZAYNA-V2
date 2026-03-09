@@ -23,6 +23,8 @@ export type AdminSidebarItem = {
   label: string;
   description: string;
   href: string;
+  actionHref?: string;
+  actionLabel?: string;
   icon: LucideIcon;
   badge?: number;
   badgeTone?: string;
@@ -35,15 +37,19 @@ export const buildAdminSidebarItems = (metrics: {
   {
     id: "dashboard",
     label: "Dashboard",
-    description: "Vue globale de la boutique",
-    href: "/admin#dashboard",
+    description: "Vue globale, activite recente et raccourcis utiles",
+    href: "/admin",
+    actionHref: "/admin/orders",
+    actionLabel: "Voir les commandes",
     icon: LayoutDashboard,
   },
   {
     id: "orders",
     label: "Commandes",
-    description: "Commandes en attente et suivi",
-    href: "/admin#orders",
+    description: "Suivi, details client et mise a jour des statuts",
+    href: "/admin/orders",
+    actionHref: "/admin/orders#orders-list",
+    actionLabel: "Ouvrir la liste",
     icon: ShoppingBag,
     badge: metrics.pendingOrders || undefined,
     badgeTone: "bg-amber-400/15 text-amber-100 ring-amber-300/30",
@@ -51,29 +57,37 @@ export const buildAdminSidebarItems = (metrics: {
   {
     id: "products",
     label: "Produits",
-    description: "Catalogue et stock",
-    href: "/admin#products",
+    description: "Catalogue, photos, stock et mise en avant",
+    href: "/admin/products",
+    actionHref: "/admin/products#new-product",
+    actionLabel: "Ajouter un produit",
     icon: Package2,
   },
   {
     id: "categories",
     label: "Categories",
-    description: "Organisation des rayons",
-    href: "/admin#categories",
+    description: "Organisation des rayons et univers de vente",
+    href: "/admin/categories",
+    actionHref: "/admin/categories#new-category",
+    actionLabel: "Ajouter une categorie",
     icon: Tag,
   },
   {
     id: "brands",
     label: "Marques",
-    description: "Logos et partenaires",
-    href: "/admin#brands",
+    description: "Marques, logos et partenaires du catalogue",
+    href: "/admin/brands",
+    actionHref: "/admin/brands#new-brand",
+    actionLabel: "Ajouter une marque",
     icon: Store,
   },
   {
     id: "promos",
     label: "Codes promo",
-    description: "Remises et campagnes",
-    href: "/admin#promos",
+    description: "Remises actives, expirations et campagnes",
+    href: "/admin/promos",
+    actionHref: "/admin/promos#new-promo",
+    actionLabel: "Creer une promo",
     icon: Percent,
     badge: metrics.expiringPromoCodes || undefined,
     badgeTone: "bg-rose-400/15 text-rose-100 ring-rose-300/30",
@@ -140,7 +154,7 @@ export default function AdminSidebar({
               <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-white/55">
                 Espace Admin
               </p>
-              <Link href="/admin#dashboard" className="mt-1 block text-xl font-semibold tracking-tight">
+              <Link href="/admin" className="mt-1 block text-xl font-semibold tracking-tight">
                 Zayna Control
               </Link>
             </div>

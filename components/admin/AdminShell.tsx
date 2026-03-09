@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useMemo, useState, type ReactNode } from "react";
+import { usePathname } from "next/navigation";
 
 import AdminHeader from "@/components/admin/AdminHeader";
 import AdminSidebar, { buildAdminSidebarItems } from "@/components/admin/AdminSidebar";
@@ -26,9 +27,9 @@ export default function AdminShell({
   expiringPromoCodes,
   children,
 }: AdminShellProps) {
+  const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [activeSection, setActiveSection] = useState("dashboard");
 
   const items = useMemo(
     () =>
@@ -39,49 +40,13 @@ export default function AdminShell({
     [expiringPromoCodes, pendingOrders]
   );
 
-  useEffect(() => {
-    const sectionIds = items.map((item) => item.id);
-    const updateFromHash = () => {
-      const hash = window.location.hash.replace("#", "");
-      if (hash && sectionIds.includes(hash)) {
-        setActiveSection(hash);
-      }
-    };
-
-    updateFromHash();
-    window.addEventListener("hashchange", updateFromHash);
-
-    const sections = sectionIds
-      .map((id) => document.getElementById(id))
-      .filter((section): section is HTMLElement => Boolean(section));
-
-    if (!sections.length) {
-      return () => window.removeEventListener("hashchange", updateFromHash);
-    }
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visibleEntries = entries
-          .filter((entry) => entry.isIntersecting)
-          .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
-
-        if (visibleEntries[0]?.target?.id) {
-          setActiveSection(visibleEntries[0].target.id);
-        }
-      },
-      {
-        rootMargin: "-20% 0px -55% 0px",
-        threshold: [0.15, 0.35, 0.55],
-      }
-    );
-
-    sections.forEach((section) => observer.observe(section));
-
-    return () => {
-      window.removeEventListener("hashchange", updateFromHash);
-      observer.disconnect();
-    };
-  }, [items]);
+  const activeSection =
+    items.find(
+      (item) =>
+        item.href === "/admin"
+          ? pathname === item.href
+          : pathname === item.href || pathname.startsWith(`${item.href}/`)
+    )?.id || "dashboard";
 
   return (
     <div
